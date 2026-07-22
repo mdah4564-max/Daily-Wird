@@ -1,1063 +1,1439 @@
-/**
- * ============================================
- * تطبيق متابع الورد اليومي - ملف JavaScript الرئيسي
- * ============================================
- */
+:root {
+  --primary: #2e7d32;
+  --primary-light: #4caf50;
+  --primary-dark: #1b5e20;
+  --gold: #ffd54f;
+  --gold-light: #ffe082;
+  --white: #ffffff;
+  --gray-100: #f5f5f5;
+  --gray-200: #e0e0e0;
+  --gray-300: #bdbdbd;
+  --gray-600: #757575;
+  --gray-800: #424242;
+  --gray-900: #212121;
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  --glass-bg: rgba(255, 255, 255, 0.25);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --radius: 20px;
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --font: 'Tajawal', sans-serif;
+}
 
-(function() {
-  'use strict';
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-  // ============================================
-  // إعدادات التطبيق
-  // ============================================
-  const APP = {
-    name: 'متابع الورد اليومي',
-    version: '1.0',
-    storageKey: 'wardAppData'
-  };
+body {
+  font-family: var(--font);
+  background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 30%, #4caf50 60%, #ffd54f 100%);
+  min-height: 100vh;
+  color: var(--gray-900);
+  direction: rtl;
+  padding: 20px;
+  transition: background 0.5s ease;
+}
 
-  // ============================================
-  // البيانات الافتراضية
-  // ============================================
-  const defaultData = {
-    user: {
-      name: 'مستخدم',
-      email: '',
-      goal: 1 // عدد الأجزاء اليومية
-    },
-    settings: {
-      themeColor: '#2e7d32',
-      darkMode: false
-    },
-    history: {}, // { '2026-01-15': true, ... }
-    streak: 0,
-    lastCompletion: null,
-    created: new Date().toISOString()
-  };
+/* Glassmorphism */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow);
+}
 
-  // ============================================
-  // إدارة التخزين المحلي (LocalStorage)
-  // ============================================
-  const Storage = {
-    get: function() {
-      try {
-        const data = localStorage.getItem(APP.storageKey);
-        if (data) {
-          return JSON.parse(data);
-        }
-      } catch (e) {
-        console.warn('فشل قراءة البيانات:', e);
-      }
-      return null;
-    },
+.glass-card {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius);
+  padding: 30px;
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.2);
+  transition: var(--transition);
+}
 
-    set: function(data) {
-      try {
-        localStorage.setItem(APP.storageKey, JSON.stringify(data));
-        return true;
-      } catch (e) {
-        console.warn('فشل حفظ البيانات:', e);
-        return false;
-      }
-    },
+.glass-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
 
-    getSession: function() {
-      try {
-        const session = localStorage.getItem('wardSession');
-        return session ? JSON.parse(session) : null;
-      } catch (e) {
-        return null;
-      }
-    },
+/* Login Page */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
 
-    setSession: function(session) {
-      try {
-        localStorage.setItem('wardSession', JSON.stringify(session));
-        return true;
-      } catch (e) {
-        return false;
-      }
-    },
+.login-card {
+  max-width: 420px;
+  width: 100%;
+  padding: 40px 35px;
+}
 
-    clearSession: function() {
-      localStorage.removeItem('wardSession');
-    },
+.logo-area {
+  text-align: center;
+  margin-bottom: 30px;
+}
 
-    clearAll: function() {
-      localStorage.removeItem(APP.storageKey);
-      localStorage.removeItem('wardSession');
-    }
-  };
+.logo-icon {
+  font-size: 50px;
+  color: var(--gold);
+  background: rgba(255, 213, 79, 0.2);
+  padding: 15px;
+  border-radius: 50%;
+  margin-bottom: 15px;
+  animation: float 3s ease-in-out infinite;
+}
 
-  // ============================================
-  // إدارة البيانات
-  // ============================================
-  const DataManager = {
-    load: function() {
-      let data = Storage.get();
-      if (!data) {
-        data = JSON.parse(JSON.stringify(defaultData));
-        Storage.set(data);
-      }
-      return data;
-    },
+.site-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--white);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
 
-    save: function(data) {
-      return Storage.set(data);
-    },
+.subtitle {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 16px;
+  margin-top: 5px;
+}
 
-    getToday: function() {
-      return new Date().toISOString().split('T')[0];
-    },
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
 
-    isCompletedToday: function(data) {
-      const today = this.getToday();
-      return data.history && data.history[today] === true;
-    },
+.input-group {
+  position: relative;
+}
 
-    toggleToday: function(data) {
-      const today = this.getToday();
-      if (data.history[today]) {
-        delete data.history[today];
-      } else {
-        data.history[today] = true;
-        data.lastCompletion = today;
-      }
-      this.updateStats(data);
-      this.save(data);
-      return data;
-    },
+.input-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gold);
+  font-size: 18px;
+}
 
-    updateStats: function(data) {
-      // حساب streak
-      let streak = 0;
-      const today = new Date();
-      const dates = Object.keys(data.history).sort();
+.input-group input {
+  width: 100%;
+  padding: 14px 45px 14px 20px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--white);
+  font-size: 16px;
+  font-family: var(--font);
+  transition: var(--transition);
+  outline: none;
+}
 
-      if (dates.length > 0) {
-        // التحقق من اليوم الحالي
-        const todayStr = this.getToday();
-        let current = new Date(todayStr);
-        
-        // إذا كان اليوم منجزاً
-        if (data.history[todayStr]) {
-          streak = 1;
-          let checkDate = new Date(todayStr);
-          checkDate.setDate(checkDate.getDate() - 1);
-          
-          while (data.history[checkDate.toISOString().split('T')[0]]) {
-            streak++;
-            checkDate.setDate(checkDate.getDate() - 1);
-          }
-        } else {
-          // ابحث عن آخر يوم منجز
-          let lastDate = null;
-          for (let i = dates.length - 1; i >= 0; i--) {
-            const d = new Date(dates[i]);
-            if (d <= new Date(todayStr)) {
-              lastDate = dates[i];
-              break;
-            }
-          }
-          
-          if (lastDate) {
-            const lastDateObj = new Date(lastDate);
-            const diff = Math.floor((new Date(todayStr) - lastDateObj) / (1000 * 60 * 60 * 24));
-            if (diff <= 1) {
-              streak = 1;
-              let checkDate = new Date(lastDate);
-              checkDate.setDate(checkDate.getDate() - 1);
-              
-              while (data.history[checkDate.toISOString().split('T')[0]]) {
-                streak++;
-                checkDate.setDate(checkDate.getDate() - 1);
-              }
-            }
-          }
-        }
-      }
-      
-      data.streak = streak;
-    },
+.input-group input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
 
-    getCompletedCount: function(data) {
-      return Object.keys(data.history).filter(key => data.history[key] === true).length;
-    },
+.input-group input:focus {
+  border-color: var(--gold);
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 20px rgba(255, 213, 79, 0.2);
+}
 
-    getMonthlyCompleted: function(data, year, month) {
-      const prefix = `${year}-${String(month).padStart(2, '0')}`;
-      return Object.keys(data.history).filter(key => 
-        key.startsWith(prefix) && data.history[key] === true
-      ).length;
-    },
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+}
 
-    getWeeklyCompleted: function(data) {
-      const today = new Date();
-      const dayOfWeek = today.getDay(); // 0=Sunday, 1=Monday...
-      const startOfWeek = new Date(today);
-      startOfWeek.setDate(today.getDate() - dayOfWeek + 1); // Monday
-      
-      let count = 0;
-      for (let i = 0; i < 7; i++) {
-        const d = new Date(startOfWeek);
-        d.setDate(startOfWeek.getDate() + i);
-        const key = d.toISOString().split('T')[0];
-        if (data.history[key]) count++;
-      }
-      return count;
-    },
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
 
-    getMaxStreak: function(data) {
-      let maxStreak = 0;
-      let currentStreak = 0;
-      const dates = Object.keys(data.history).sort();
-      
-      if (dates.length === 0) return 0;
-      
-      let prevDate = null;
-      for (const dateStr of dates) {
-        if (!data.history[dateStr]) continue;
-        const current = new Date(dateStr);
-        if (prevDate) {
-          const diff = Math.floor((current - prevDate) / (1000 * 60 * 60 * 24));
-          if (diff === 1) {
-            currentStreak++;
-          } else {
-            currentStreak = 1;
-          }
-        } else {
-          currentStreak = 1;
-        }
-        if (currentStreak > maxStreak) maxStreak = currentStreak;
-        prevDate = current;
-      }
-      
-      return maxStreak;
-    }
-  };
+.remember-me input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--gold);
+  cursor: pointer;
+}
 
-  // ============================================
-  // إدارة الجلسة
-  // ============================================
-  const SessionManager = {
-    login: function(email, name) {
-      const session = {
-        email: email,
-        name: name || 'مستخدم',
-        loggedIn: true,
-        timestamp: new Date().toISOString()
-      };
-      Storage.setSession(session);
-      return session;
-    },
+.forgot-link {
+  color: var(--gold-light);
+  text-decoration: none;
+  transition: var(--transition);
+}
 
-    logout: function() {
-      Storage.clearSession();
-      window.location.href = 'login.html';
-    },
+.forgot-link:hover {
+  color: var(--gold);
+  text-decoration: underline;
+}
 
-    isLoggedIn: function() {
-      const session = Storage.getSession();
-      return session && session.loggedIn === true;
-    },
+.btn-primary {
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--gold), #ffca28);
+  color: var(--gray-900);
+  font-size: 18px;
+  font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
 
-    getUser: function() {
-      return Storage.getSession();
-    },
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(255, 213, 79, 0.4);
+}
 
-    // Developer Mode - دخول تجريبي
-    // تنبيه: يجب إزالة هذا الخيار قبل النشر في بيئة الإنتاج (Production)
-    devLogin: function() {
-      const session = {
-        email: 'dev@example.com',
-        name: 'مستخدم تجريبي',
-        loggedIn: true,
-        timestamp: new Date().toISOString(),
-        isDev: true
-      };
-      Storage.setSession(session);
-      
-      // إنشاء بيانات تجريبية
-      let data = DataManager.load();
-      if (!data.user.name || data.user.name === 'مستخدم') {
-        data.user.name = 'مستخدم تجريبي';
-        data.user.email = 'dev@example.com';
-        DataManager.save(data);
-      }
-      
-      window.location.href = 'index.html';
-    }
-  };
+.btn-primary:active {
+  transform: scale(0.97);
+}
 
-  // ============================================
-  // حماية الصفحات
-  // ============================================
-  const PageGuard = {
-    protect: function() {
-      const currentPage = window.location.pathname.split('/').pop() || 'login.html';
-      
-      // الصفحات التي لا تحتاج تسجيل دخول
-      const publicPages = ['login.html'];
-      
-      if (publicPages.includes(currentPage)) {
-        // إذا كان المستخدم مسجلاً الدخول وفتح login.html، ننقله للرئيسية
-        if (SessionManager.isLoggedIn() && currentPage === 'login.html') {
-          window.location.href = 'index.html';
-          return false;
-        }
-        return true;
-      }
-      
-      // الصفحات المحمية
-      if (!SessionManager.isLoggedIn()) {
-        window.location.href = 'login.html';
-        return false;
-      }
-      
-      return true;
-    }
-  };
+.btn-outline {
+  padding: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--white);
+  font-size: 16px;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
 
-  // ============================================
-  // صفحة تسجيل الدخول (login.html)
-  // ============================================
-  function initLoginPage() {
-    const loginForm = document.getElementById('loginForm');
-    const loginEmail = document.getElementById('loginEmail');
-    const loginPassword = document.getElementById('loginPassword');
-    const rememberMe = document.getElementById('rememberMe');
-    const createAccountBtn = document.getElementById('createAccountBtn');
-    const guestLoginBtn = document.getElementById('guestLoginBtn');
-    const devModeLink = document.getElementById('devModeLink');
+.btn-outline:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: var(--gold);
+  transform: translateY(-2px);
+}
 
-    // بيانات تسجيل دخول تجريبية
-    const DEMO_CREDENTIALS = {
-      email: 'user@example.com',
-      password: '123456'
-    };
+.btn-ghost {
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 16px;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
 
-    // معالج تسجيل الدخول
-    if (loginForm) {
-      loginForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const email = loginEmail.value.trim();
-        const password = loginPassword.value.trim();
-        
-        if (!email || !password) {
-          showMessage('يرجى إدخال البريد الإلكتروني وكلمة المرور', 'error');
-          return;
-        }
-        
-        // التحقق من البيانات التجريبية
-        if (email === DEMO_CREDENTIALS.email && password === DEMO_CREDENTIALS.password) {
-          const name = email.split('@')[0] || 'مستخدم';
-          SessionManager.login(email, name);
-          
-          // حفظ بيانات المستخدم
-          let data = DataManager.load();
-          data.user.name = name;
-          data.user.email = email;
-          DataManager.save(data);
-          
-          showMessage('تم تسجيل الدخول بنجاح!', 'success');
-          setTimeout(() => {
-            window.location.href = 'index.html';
-          }, 500);
-        } else {
-          showMessage('البريد الإلكتروني أو كلمة المرور غير صحيحة', 'error');
-        }
-      });
-    }
+.btn-ghost:hover {
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.1);
+}
 
-    // إنشاء حساب
-    if (createAccountBtn) {
-      createAccountBtn.addEventListener('click', function() {
-        const email = loginEmail.value.trim();
-        const password = loginPassword.value.trim();
-        
-        if (!email || !password) {
-          showMessage('يرجى إدخال البريد الإلكتروني وكلمة المرور', 'error');
-          return;
-        }
-        
-        if (password.length < 4) {
-          showMessage('كلمة المرور يجب أن تكون 4 أحرف على الأقل', 'error');
-          return;
-        }
-        
-        // حفظ المستخدم الجديد
-        let data = DataManager.load();
-        data.user.name = email.split('@')[0] || 'مستخدم';
-        data.user.email = email;
-        DataManager.save(data);
-        
-        SessionManager.login(email, data.user.name);
-        showMessage('تم إنشاء الحساب بنجاح!', 'success');
-        setTimeout(() => {
-          window.location.href = 'index.html';
-        }, 500);
-      });
-    }
+.auth-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 5px;
+}
 
-    // دخول كضيف
-    if (guestLoginBtn) {
-      guestLoginBtn.addEventListener('click', function() {
-        const guestName = 'ضيف_' + Math.floor(Math.random() * 10000);
-        const guestEmail = 'guest_' + Date.now() + '@temp.com';
-        
-        let data = DataManager.load();
-        data.user.name = guestName;
-        data.user.email = guestEmail;
-        DataManager.save(data);
-        
-        SessionManager.login(guestEmail, guestName);
-        showMessage('تم الدخول كضيف', 'success');
-        setTimeout(() => {
-          window.location.href = 'index.html';
-        }, 500);
-      });
-    }
+.auth-actions button {
+  flex: 1;
+}
 
-    // Developer Mode - دخول تجريبي
-    // تنبيه هام: يجب إزالة هذا الخيار قبل نشر الموقع في بيئة الإنتاج (Production)
-    if (devModeLink) {
-      devModeLink.addEventListener('click', function(e) {
-        e.preventDefault();
-        SessionManager.devLogin();
-      });
-    }
+.dev-mode {
+  margin-top: 20px;
+  text-align: center;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
 
-    // نسيت كلمة المرور
-    const forgotLink = document.getElementById('forgotPassword');
-    if (forgotLink) {
-      forgotLink.addEventListener('click', function(e) {
-        e.preventDefault();
-        showMessage('تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني', 'success');
-      });
-    }
+.dev-link {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  text-decoration: none;
+  transition: var(--transition);
+}
 
-    // تذكرني
-    if (rememberMe) {
-      const savedEmail = localStorage.getItem('rememberedEmail');
-      if (savedEmail) {
-        loginEmail.value = savedEmail;
-        rememberMe.checked = true;
-      }
-      
-      rememberMe.addEventListener('change', function() {
-        if (this.checked) {
-          localStorage.setItem('rememberedEmail', loginEmail.value);
-        } else {
-          localStorage.removeItem('rememberedEmail');
-        }
-      });
-    }
+.dev-link:hover {
+  color: var(--gold-light);
+  text-decoration: underline;
+}
+
+/* Navbar */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  border-radius: var(--radius);
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--white);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.nav-brand i {
+  font-size: 28px;
+  color: var(--gold);
+}
+
+.nav-menu {
+  display: flex;
+  list-style: none;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.nav-menu li a {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 10px;
+  transition: var(--transition);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-menu li a:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--white);
+  transform: translateY(-2px);
+}
+
+.nav-menu li a.active {
+  background: rgba(255, 213, 79, 0.25);
+  color: var(--gold);
+}
+
+.nav-toggle {
+  display: none;
+  color: var(--white);
+  font-size: 26px;
+  cursor: pointer;
+}
+
+/* Main Content */
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.slide-up {
+  animation: slideUp 0.8s ease-out;
+}
+
+/* Welcome Section */
+.welcome-section {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius);
+  padding: 25px 30px;
+  margin-bottom: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.welcome-text h2 {
+  color: var(--white);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.welcome-text h2 span {
+  color: var(--gold);
+}
+
+.date-text, .time-text {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 16px;
+  margin-top: 5px;
+}
+
+/* Daily Card */
+.daily-card {
+  padding: 25px 30px;
+  margin-bottom: 25px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.card-header i {
+  font-size: 28px;
+  color: var(--gold);
+}
+
+.card-header h3 {
+  color: var(--white);
+  font-size: 22px;
+}
+
+/* Quran Badge */
+.quran-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(255, 213, 79, 0.25), rgba(255, 213, 79, 0.1));
+  border: 1px solid rgba(255, 213, 79, 0.3);
+  border-radius: 30px;
+  padding: 6px 16px;
+  font-size: 14px;
+  color: var(--gold);
+  font-weight: 700;
+  animation: pulseGold 2s ease-in-out infinite;
+}
+
+.quran-badge i {
+  font-size: 18px;
+  color: var(--gold);
+}
+
+@keyframes pulseGold {
+  0%, 100% { 
+    box-shadow: 0 0 10px rgba(255, 213, 79, 0.1);
+  }
+  50% { 
+    box-shadow: 0 0 25px rgba(255, 213, 79, 0.3);
+  }
+}
+
+/* Quran Detail */
+.daily-card .quran-detail {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-top: 15px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  border-right: 4px solid var(--gold);
+}
+
+.daily-card .quran-detail .detail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 14px;
+}
+
+.daily-card .quran-detail .detail-item i {
+  color: var(--gold);
+  font-size: 16px;
+}
+
+.daily-card .quran-detail .detail-item strong {
+  color: var(--white);
+  font-weight: 700;
+}
+
+/* Progress Section */
+.progress-section {
+  margin-bottom: 20px;
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.progress-bar-bg {
+  width: 100%;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), #ffca28);
+  border-radius: 10px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 0%;
+  box-shadow: 0 0 20px rgba(255, 213, 79, 0.3);
+}
+
+.btn-success {
+  padding: 14px 30px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: var(--white);
+  font-size: 18px;
+  font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-success:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 30px rgba(46, 125, 50, 0.4);
+}
+
+.btn-success:active {
+  transform: scale(0.97);
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.stat-card {
+  padding: 20px;
+  text-align: center;
+  transition: var(--transition);
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+}
+
+.stat-icon {
+  font-size: 35px;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+
+.stat-card h4 {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.stat-card p {
+  color: var(--white);
+  font-size: 32px;
+  font-weight: 800;
+  margin-top: 5px;
+}
+
+/* Recent Card */
+.recent-card {
+  padding: 25px 30px;
+  margin-bottom: 25px;
+}
+
+.recent-card h3 {
+  color: var(--white);
+  font-size: 20px;
+  margin-bottom: 15px;
+}
+
+.recent-card h3 i {
+  color: var(--gold);
+  margin-left: 10px;
+}
+
+.recent-list {
+  list-style: none;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.recent-list li {
+  padding: 10px 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  border-right: 3px solid var(--gold);
+  transition: var(--transition);
+}
+
+.recent-list li:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 20px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 30px;
+  font-size: 14px;
+}
+
+/* Tracker Page */
+.page-title {
+  color: var(--white);
+  font-size: 28px;
+  margin-bottom: 25px;
+}
+
+.page-title i {
+  color: var(--gold);
+  margin-left: 12px;
+}
+
+.tracker-grid {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 25px;
+  margin-bottom: 25px;
+}
+
+.calendar-card {
+  padding: 25px;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.calendar-header h3 {
+  color: var(--white);
+  font-size: 22px;
+}
+
+.calendar-header button {
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  border-radius: 10px;
+  color: var(--white);
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 18px;
+}
+
+.calendar-header button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.calendar-weekdays span {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+}
+
+.calendar-days button {
+  aspect-ratio: 1;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--white);
+  font-size: 16px;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.calendar-days button:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+
+.calendar-days button.completed {
+  background: var(--primary);
+  color: var(--white);
+  box-shadow: 0 4px 15px rgba(46, 125, 50, 0.4);
+}
+
+.calendar-days button.today {
+  border: 2px solid var(--gold);
+}
+
+/* Stats Tracker */
+.stats-tracker {
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 15px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  transition: var(--transition);
+}
+
+.stat-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.stat-item i {
+  color: var(--gold);
+  font-size: 20px;
+  width: 30px;
+}
+
+.stat-item span {
+  color: rgba(255, 255, 255, 0.8);
+  flex: 1;
+  font-size: 14px;
+}
+
+.stat-item strong {
+  color: var(--white);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+/* Chart CSS */
+.chart-css {
+  padding: 25px 30px;
+  margin-bottom: 25px;
+}
+
+.chart-css h3 {
+  color: var(--white);
+  margin-bottom: 20px;
+}
+
+.chart-css h3 i {
+  color: var(--gold);
+  margin-left: 10px;
+}
+
+.bar-chart {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  height: 150px;
+  padding-top: 10px;
+}
+
+.bar-chart .bar {
+  flex: 1;
+  background: linear-gradient(180deg, var(--gold), #ffca28);
+  border-radius: 6px 6px 0 0;
+  min-height: 5px;
+  transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.bar-chart .bar span {
+  position: absolute;
+  bottom: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* Settings Page */
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+}
+
+.setting-card {
+  padding: 25px;
+}
+
+.setting-card h3 {
+  color: var(--white);
+  font-size: 18px;
+  margin-bottom: 18px;
+}
+
+.setting-card h3 i {
+  color: var(--gold);
+  margin-left: 10px;
+}
+
+.setting-group {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.setting-group input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--white);
+  font-size: 16px;
+  font-family: var(--font);
+  transition: var(--transition);
+  outline: none;
+  min-width: 150px;
+}
+
+.setting-group input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.setting-group input:focus {
+  border-color: var(--gold);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.setting-group button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--gold), #ffca28);
+  color: var(--gray-900);
+  font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 15px;
+}
+
+.setting-group button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(255, 213, 79, 0.3);
+}
+
+.color-options {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.color-btn {
+  width: 45px;
+  height: 45px;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+}
+
+.color-btn:hover {
+  transform: scale(1.15);
+}
+
+.color-btn.active {
+  border-color: var(--gold);
+  box-shadow: 0 0 20px rgba(255, 213, 79, 0.3);
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 32px;
+  cursor: pointer;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  transition: var(--transition);
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  height: 24px;
+  width: 24px;
+  left: 4px;
+  bottom: 4px;
+  background: var(--white);
+  border-radius: 50%;
+  transition: var(--transition);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: var(--gold);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(28px);
+}
+
+.setting-card.danger .btn-danger {
+  padding: 14px 28px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #c62828, #e53935);
+  color: var(--white);
+  font-size: 16px;
+  font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.setting-card.danger .btn-danger:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px rgba(198, 40, 40, 0.4);
+}
+
+.setting-card p {
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.8;
+}
+
+/* ============================================
+   الوضع الليلي (Dark Mode) - شامل لكل الصفحات
+   ============================================ */
+
+body.dark-mode {
+  background: linear-gradient(135deg, #0a0a1a 0%, #0f1a2e 25%, #1a1a2e 50%, #0d0d1f 100%);
+  min-height: 100vh;
+}
+
+body.dark-mode .glass,
+body.dark-mode .glass-card,
+body.dark-mode .login-card,
+body.dark-mode .welcome-section,
+body.dark-mode .daily-card,
+body.dark-mode .stat-card,
+body.dark-mode .recent-card,
+body.dark-mode .calendar-card,
+body.dark-mode .stats-tracker,
+body.dark-mode .chart-css,
+body.dark-mode .setting-card,
+body.dark-mode .navbar {
+  background: rgba(10, 10, 30, 0.7) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.dark-mode .navbar {
+  background: rgba(10, 10, 30, 0.85) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .nav-menu li a {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+body.dark-mode .nav-menu li a:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--white);
+}
+
+body.dark-mode .nav-menu li a.active {
+  background: rgba(255, 213, 79, 0.15);
+  color: var(--gold);
+}
+
+body.dark-mode .welcome-text h2 {
+  color: var(--white);
+}
+
+body.dark-mode .date-text,
+body.dark-mode .time-text {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+body.dark-mode .card-header h3 {
+  color: var(--white);
+}
+
+body.dark-mode .progress-label {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+body.dark-mode .stat-card h4 {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+body.dark-mode .stat-card p {
+  color: var(--white);
+}
+
+body.dark-mode .recent-card h3 {
+  color: var(--white);
+}
+
+body.dark-mode .recent-list li {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.8);
+  border-right-color: var(--gold);
+}
+
+body.dark-mode .recent-list li:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .footer {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+body.dark-mode .page-title {
+  color: var(--white);
+}
+
+body.dark-mode .calendar-header h3 {
+  color: var(--white);
+}
+
+body.dark-mode .calendar-header button {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--white);
+}
+
+body.dark-mode .calendar-header button:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+body.dark-mode .calendar-weekdays span {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+body.dark-mode .calendar-days button {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+body.dark-mode .calendar-days button:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+body.dark-mode .calendar-days button.completed {
+  background: linear-gradient(135deg, #1b5e20, #2e7d32) !important;
+  color: var(--white) !important;
+  box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+}
+
+body.dark-mode .calendar-days button.today {
+  border-color: var(--gold);
+}
+
+body.dark-mode .stat-item {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .stat-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .stat-item span {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+body.dark-mode .stat-item strong {
+  color: var(--white);
+}
+
+body.dark-mode .chart-css h3 {
+  color: var(--white);
+}
+
+body.dark-mode .setting-card h3 {
+  color: var(--white);
+}
+
+body.dark-mode .setting-card p {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+body.dark-mode .setting-group input {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--white);
+}
+
+body.dark-mode .setting-group input:focus {
+  border-color: var(--gold);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .setting-group input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+body.dark-mode .color-btn {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .color-btn.active {
+  border-color: var(--gold);
+  box-shadow: 0 0 20px rgba(255, 213, 79, 0.2);
+}
+
+body.dark-mode .toggle-slider {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+body.dark-mode .daily-card .quran-detail {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .daily-card .quran-detail .detail-item {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+body.dark-mode .daily-card .quran-detail .detail-item strong {
+  color: var(--white);
+}
+
+body.dark-mode .quran-badge {
+  background: rgba(255, 213, 79, 0.15);
+  border-color: rgba(255, 213, 79, 0.2);
+}
+
+body.dark-mode .input-group input {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--white);
+}
+
+body.dark-mode .input-group input:focus {
+  border-color: var(--gold);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .input-group input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+body.dark-mode .form-options {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+body.dark-mode .logo-area .site-title {
+  color: var(--white);
+}
+
+body.dark-mode .logo-area .subtitle {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+body.dark-mode .btn-outline {
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+body.dark-mode .btn-outline:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--gold);
+}
+
+body.dark-mode .btn-ghost {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+body.dark-mode .btn-ghost:hover {
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .dev-link {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+body.dark-mode .dev-link:hover {
+  color: var(--gold-light);
+}
+
+body.dark-mode .setting-card.danger .btn-danger {
+  background: linear-gradient(135deg, #8e0000, #c62828);
+}
+
+body.dark-mode .setting-card.danger .btn-danger:hover {
+  box-shadow: 0 8px 30px rgba(198, 40, 40, 0.3);
+}
+
+body.dark-mode .bar-chart .bar {
+  background: linear-gradient(180deg, var(--gold), #ff8f00);
+}
+
+/* Ripple Effect */
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  width: 100px;
+  height: 100px;
+  transform: scale(0);
+  animation: rippleAnim 0.6s ease-out;
+}
+
+@keyframes rippleAnim {
+  to { transform: scale(4); opacity: 0; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 213, 79, 0.3);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 213, 79, 0.5);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .login-card {
+    padding: 30px 20px;
   }
 
-  // ============================================
-  // عرض الرسائل
-  // ============================================
-  function showMessage(text, type = 'info') {
-    // إزالة الرسائل القديمة
-    const oldMsg = document.querySelector('.app-message');
-    if (oldMsg) oldMsg.remove();
-    
-    const msg = document.createElement('div');
-    msg.className = `app-message ${type}`;
-    msg.textContent = text;
-    
-    const colors = {
-      success: 'linear-gradient(135deg, #2e7d32, #4caf50)',
-      error: 'linear-gradient(135deg, #c62828, #e53935)',
-      info: 'linear-gradient(135deg, #1565c0, #42a5f5)'
-    };
-    
-    msg.style.cssText = `
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: ${colors[type] || colors.info};
-      color: white;
-      padding: 14px 28px;
-      border-radius: 12px;
-      font-family: 'Tajawal', sans-serif;
-      font-weight: 500;
-      font-size: 16px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
-      z-index: 9999;
-      animation: slideDown 0.5s ease-out;
-      text-align: center;
-      max-width: 90%;
-      direction: rtl;
-    `;
-    
-    document.body.appendChild(msg);
-    
-    // إضافة تأثير الـ Ripple
-    msg.classList.add('ripple');
-    
-    // إزالة تلقائية بعد 3 ثوان
-    setTimeout(() => {
-      msg.style.opacity = '0';
-      msg.style.transform = 'translateX(-50%) translateY(-20px)';
-      msg.style.transition = 'all 0.4s ease';
-      setTimeout(() => msg.remove(), 400);
-    }, 3000);
+  .site-title {
+    font-size: 24px;
   }
 
-  // ============================================
-  // الصفحة الرئيسية (index.html)
-  // ============================================
-  function initIndexPage() {
-    const data = DataManager.load();
-    const session = SessionManager.getUser();
-    
-    // عرض اسم المستخدم
-    const userNameDisplay = document.getElementById('userNameDisplay');
-    if (userNameDisplay) {
-      userNameDisplay.textContent = session ? session.name : data.user.name;
-    }
-    
-    // تحديث التاريخ والوقت
-    updateDateTime();
-    setInterval(updateDateTime, 1000);
-    
-    // تحديث واجهة المستخدم
-    updateUI(data);
-    
-    // زر الإنجاز
-    const completeBtn = document.getElementById('completeBtn');
-    if (completeBtn) {
-      completeBtn.addEventListener('click', function() {
-        // إضافة تأثير Ripple
-        this.classList.add('ripple');
-        setTimeout(() => this.classList.remove('ripple'), 600);
-        
-        let currentData = DataManager.load();
-        currentData = DataManager.toggleToday(currentData);
-        updateUI(currentData);
-        
-        const isCompleted = DataManager.isCompletedToday(currentData);
-        showMessage(isCompleted ? 'تم تسجيل الإنجاز بنجاح! 🌟' : 'تم إلغاء الإنجاز', isCompleted ? 'success' : 'info');
-      });
-    }
-    
-    // تحديث الإحصائيات كل 30 ثانية
-    setInterval(() => {
-      const freshData = DataManager.load();
-      updateUI(freshData);
-    }, 30000);
+  .nav-toggle {
+    display: block;
   }
 
-  // ============================================
-  // تحديث التاريخ والوقت
-  // ============================================
-  function updateDateTime() {
-    const now = new Date();
-    
-    const dateEl = document.getElementById('currentDate');
-    if (dateEl) {
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      dateEl.textContent = now.toLocaleDateString('ar-SA', options);
-    }
-    
-    const timeEl = document.getElementById('currentTime');
-    if (timeEl) {
-      timeEl.textContent = now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    }
+  .nav-menu {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
   }
 
-  // ============================================
-  // تحديث واجهة المستخدم
-  // ============================================
-  function updateUI(data) {
-    // التقدم
-    const progressFill = document.getElementById('progressFill');
-    const progressPercent = document.getElementById('progressPercent');
-    const isCompleted = DataManager.isCompletedToday(data);
-    const goal = data.user.goal || 1;
-    const percent = isCompleted ? 100 : 0;
-    
-    if (progressFill) {
-      progressFill.style.width = percent + '%';
-    }
-    if (progressPercent) {
-      progressPercent.textContent = percent + '%';
-    }
-    
-    // الأيام المتتالية
-    const streakEl = document.getElementById('streakCount');
-    if (streakEl) {
-      streakEl.textContent = data.streak || 0;
-    }
-    
-    // الأيام المنجزة
-    const completedEl = document.getElementById('completedDays');
-    if (completedEl) {
-      completedEl.textContent = DataManager.getCompletedCount(data);
-    }
-    
-    // آخر إنجاز
-    const lastEl = document.getElementById('lastCompletion');
-    if (lastEl) {
-      if (data.lastCompletion) {
-        const date = new Date(data.lastCompletion);
-        lastEl.textContent = date.toLocaleDateString('ar-SA');
-      } else {
-        lastEl.textContent = '—';
-      }
-    }
-    
-    // تغيير لون زر الإنجاز
-    const completeBtn = document.getElementById('completeBtn');
-    if (completeBtn) {
-      if (isCompleted) {
-        completeBtn.innerHTML = '<i class="fas fa-undo"></i> إلغاء الإنجاز';
-        completeBtn.style.background = 'linear-gradient(135deg, #e65100, #f57c00)';
-      } else {
-        completeBtn.innerHTML = '<i class="fas fa-check-circle"></i> تم الإنجاز';
-        completeBtn.style.background = 'linear-gradient(135deg, #2e7d32, #4caf50)';
-      }
-    }
-    
-    // تحديث قائمة آخر الإنجازات
-    updateRecentList(data);
+  .nav-menu.open {
+    display: flex;
   }
 
-  // ============================================
-  // تحديث قائمة آخر الإنجازات
-  // ============================================
-  function updateRecentList(data) {
-    const listEl = document.getElementById('recentList');
-    if (!listEl) return;
-    
-    const dates = Object.keys(data.history)
-      .filter(key => data.history[key] === true)
-      .sort((a, b) => new Date(b) - new Date(a));
-    
-    if (dates.length === 0) {
-      listEl.innerHTML = '<li>لا توجد إنجازات بعد</li>';
-      return;
-    }
-    
-    const recent = dates.slice(0, 7);
-    listEl.innerHTML = recent.map(date => {
-      const d = new Date(date);
-      const formatted = d.toLocaleDateString('ar-SA', { weekday: 'short', day: 'numeric', month: 'short' });
-      return `<li><i class="fas fa-check-circle" style="color:#4caf50;margin-left:10px;"></i> ${formatted}</li>`;
-    }).join('');
+  .nav-menu li a {
+    padding: 12px 16px;
+    width: 100%;
   }
 
-  // ============================================
-  // صفحة المتابعة (tracker.html)
-  // ============================================
-  function initTrackerPage() {
-    const data = DataManager.load();
-    const today = new Date();
-    let currentMonth = today.getMonth();
-    let currentYear = today.getFullYear();
-    
-    // عرض الإحصائيات
-    updateTrackerStats(data);
-    
-    // عرض التقويم
-    renderCalendar(currentYear, currentMonth, data);
-    
-    // أزرار التنقل في التقويم
-    const prevBtn = document.getElementById('prevMonth');
-    const nextBtn = document.getElementById('nextMonth');
-    
-    if (prevBtn) {
-      prevBtn.addEventListener('click', function() {
-        currentMonth--;
-        if (currentMonth < 0) {
-          currentMonth = 11;
-          currentYear--;
-        }
-        renderCalendar(currentYear, currentMonth, data);
-      });
-    }
-    
-    if (nextBtn) {
-      nextBtn.addEventListener('click', function() {
-        currentMonth++;
-        if (currentMonth > 11) {
-          currentMonth = 0;
-          currentYear++;
-        }
-        renderCalendar(currentYear, currentMonth, data);
-      });
-    }
-    
-    // تحديث المخطط
-    renderChart(data);
+  .tracker-grid {
+    grid-template-columns: 1fr;
   }
 
-  // ============================================
-  // عرض التقويم
-  // ============================================
-  function renderCalendar(year, month, data) {
-    const monthYearEl = document.getElementById('monthYear');
-    const daysContainer = document.getElementById('calendarDays');
-    
-    if (!monthYearEl || !daysContainer) return;
-    
-    const monthNames = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 
-                        'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
-    
-    monthYearEl.textContent = `${monthNames[month]} ${year}`;
-    
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startDay = firstDay.getDay(); // 0=Sunday, 1=Monday...
-    
-    // تحويل الأيام لتبدأ من الأحد
-    const adjustedStart = startDay;
-    
-    // إنشاء الأيام
-    let html = '';
-    const todayStr = DataManager.getToday();
-    
-    // أيام فارغة قبل بداية الشهر
-    for (let i = 0; i < adjustedStart; i++) {
-      html += '<button disabled style="background:transparent;cursor:default;"></button>';
-    }
-    
-    for (let day = 1; day <= daysInMonth; day++) {
-      const dateObj = new Date(year, month, day);
-      const dateStr = dateObj.toISOString().split('T')[0];
-      const isCompleted = data.history[dateStr] === true;
-      const isToday = dateStr === todayStr;
-      
-      let classes = '';
-      if (isCompleted) classes += 'completed ';
-      if (isToday) classes += 'today ';
-      
-      html += `<button class="${classes}" data-date="${dateStr}">${day}</button>`;
-    }
-    
-    daysContainer.innerHTML = html;
-    
-    // إضافة مستمعين للأيام
-    daysContainer.querySelectorAll('button:not([disabled])').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const dateStr = this.dataset.date;
-        if (!dateStr) return;
-        
-        // تبديل حالة اليوم
-        let currentData = DataManager.load();
-        if (currentData.history[dateStr]) {
-          delete currentData.history[dateStr];
-        } else {
-          currentData.history[dateStr] = true;
-          currentData.lastCompletion = dateStr;
-        }
-        DataManager.updateStats(currentData);
-        DataManager.save(currentData);
-        
-        // إعادة عرض التقويم والإحصائيات
-        const yearMonth = dateStr.split('-');
-        renderCalendar(parseInt(yearMonth[0]), parseInt(yearMonth[1]) - 1, currentData);
-        updateTrackerStats(currentData);
-        renderChart(currentData);
-        showMessage('تم تحديث الإنجاز', 'success');
-      });
-    });
+  .stats-grid {
+    grid-template-columns: 1fr;
   }
 
-  // ============================================
-  // تحديث إحصائيات المتابعة
-  // ============================================
-  function updateTrackerStats(data) {
-    const today = new Date();
-    const currentMonth = today.getMonth() + 1;
-    const currentYear = today.getFullYear();
-    
-    const totalDays = new Date(currentYear, currentMonth, 0).getDate();
-    const completed = DataManager.getMonthlyCompleted(data, currentYear, currentMonth);
-    const percent = totalDays > 0 ? Math.round((completed / totalDays) * 100) : 0;
-    
-    const percentEl = document.getElementById('trackerPercent');
-    if (percentEl) percentEl.textContent = percent + '%';
-    
-    const maxStreakEl = document.getElementById('maxStreak');
-    if (maxStreakEl) maxStreakEl.textContent = DataManager.getMaxStreak(data);
-    
-    const weeklyEl = document.getElementById('weeklyCount');
-    if (weeklyEl) weeklyEl.textContent = DataManager.getWeeklyCompleted(data);
-    
-    const monthlyEl = document.getElementById('monthlyCount');
-    if (monthlyEl) monthlyEl.textContent = completed;
+  .settings-grid {
+    grid-template-columns: 1fr;
   }
 
-  // ============================================
-  // عرض المخطط البياني
-  // ============================================
-  function renderChart(data) {
-    const chartEl = document.getElementById('barChart');
-    if (!chartEl) return;
-    
-    const today = new Date();
-    const days = [];
-    
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(today);
-      d.setDate(today.getDate() - i);
-      days.push(d);
-    }
-    
-    const maxHeight = 120;
-    let maxCount = 1;
-    const counts = days.map(d => {
-      const key = d.toISOString().split('T')[0];
-      return data.history[key] === true ? 1 : 0;
-    });
-    
-    // إذا كان هناك أي قيمة أكبر من 1، استخدمها كحد أقصى
-    const maxVal = Math.max(...counts, 1);
-    
-    let html = '';
-    days.forEach((d, i) => {
-      const value = counts[i];
-      const height = (value / maxVal) * maxHeight;
-      const dayName = d.toLocaleDateString('ar-SA', { weekday: 'short' });
-      const isToday = d.toISOString().split('T')[0] === DataManager.getToday();
-      
-      html += `
-        <div class="bar" style="height:${Math.max(height, 5)}px;${isToday ? 'background:linear-gradient(180deg, #ffd54f, #ffca28);' : ''}">
-          <span>${dayName}</span>
-        </div>
-      `;
-    });
-    
-    chartEl.innerHTML = html;
+  .auth-actions {
+    flex-direction: column;
   }
 
-  // ============================================
-  // صفحة الإعدادات (settings.html)
-  // ============================================
-  function initSettingsPage() {
-    const data = DataManager.load();
-    
-    // تعبئة الحقول
-    const nameInput = document.getElementById('settingsName');
-    const goalInput = document.getElementById('settingsGoal');
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    const darkModeStatus = document.getElementById('darkModeStatus');
-    
-    if (nameInput) nameInput.value = data.user.name || '';
-    if (goalInput) goalInput.value = data.user.goal || 1;
-    if (darkModeToggle) {
-      darkModeToggle.checked = data.settings.darkMode || false;
-      if (darkModeStatus) {
-        darkModeStatus.textContent = data.settings.darkMode ? 'مفعل' : 'معطل';
-      }
-    }
-    
-    // تطبيق الوضع الليلي
-    if (data.settings.darkMode) {
-      document.body.classList.add('dark-mode');
-    }
-    
-    // تغيير الاسم
-    const saveNameBtn = document.getElementById('saveNameBtn');
-    if (saveNameBtn) {
-      saveNameBtn.addEventListener('click', function() {
-        const newName = nameInput.value.trim();
-        if (!newName) {
-          showMessage('يرجى إدخال اسم صحيح', 'error');
-          return;
-        }
-        
-        let currentData = DataManager.load();
-        currentData.user.name = newName;
-        DataManager.save(currentData);
-        
-        // تحديث الجلسة
-        const session = Storage.getSession();
-        if (session) {
-          session.name = newName;
-          Storage.setSession(session);
-        }
-        
-        showMessage('تم تحديث الاسم بنجاح', 'success');
-      });
-    }
-    
-    // تغيير الهدف
-    const saveGoalBtn = document.getElementById('saveGoalBtn');
-    if (saveGoalBtn) {
-      saveGoalBtn.addEventListener('click', function() {
-        const goal = parseInt(goalInput.value);
-        if (!goal || goal < 1 || goal > 30) {
-          showMessage('الهدف يجب أن يكون بين 1 و 30 جزءاً', 'error');
-          return;
-        }
-        
-        let currentData = DataManager.load();
-        currentData.user.goal = goal;
-        DataManager.save(currentData);
-        showMessage('تم تحديث الهدف اليومي', 'success');
-      });
-    }
-    
-    // ألوان الموقع
-    const colorBtns = document.querySelectorAll('.color-btn');
-    const currentColor = data.settings.themeColor || '#2e7d32';
-    
-    colorBtns.forEach(btn => {
-      const color = btn.dataset.color;
-      if (color === currentColor) {
-        btn.classList.add('active');
-      }
-      
-      btn.addEventListener('click', function() {
-        colorBtns.forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        
-        const newColor = this.dataset.color;
-        let currentData = DataManager.load();
-        currentData.settings.themeColor = newColor;
-        DataManager.save(currentData);
-        
-        // تحديث المتغيرات
-        document.documentElement.style.setProperty('--primary', newColor);
-        showMessage('تم تغيير لون الموقع', 'success');
-      });
-    });
-    
-    // الوضع الليلي
-    if (darkModeToggle) {
-      darkModeToggle.addEventListener('change', function() {
-        const isDark = this.checked;
-        let currentData = DataManager.load();
-        currentData.settings.darkMode = isDark;
-        DataManager.save(currentData);
-        
-        if (isDark) {
-          document.body.classList.add('dark-mode');
-          if (darkModeStatus) darkModeStatus.textContent = 'مفعل';
-        } else {
-          document.body.classList.remove('dark-mode');
-          if (darkModeStatus) darkModeStatus.textContent = 'معطل';
-        }
-        
-        showMessage(isDark ? 'تم تفعيل الوضع الليلي' : 'تم إلغاء الوضع الليلي', 'success');
-      });
-    }
-    
-    // حذف جميع البيانات
-    const deleteBtn = document.getElementById('deleteAllBtn');
-    if (deleteBtn) {
-      deleteBtn.addEventListener('click', function() {
-        if (confirm('هل أنت متأكد من حذف جميع البيانات؟ هذا الإجراء لا يمكن التراجع عنه!')) {
-          if (confirm('تأكيد حذف جميع البيانات مرة أخرى؟')) {
-            Storage.clearAll();
-            // إعادة تعيين البيانات الافتراضية
-            const defaultDataCopy = JSON.parse(JSON.stringify(defaultData));
-            Storage.set(defaultDataCopy);
-            showMessage('تم حذف جميع البيانات', 'success');
-            
-            // إعادة تحميل الصفحة
-            setTimeout(() => {
-              window.location.reload();
-            }, 500);
-          }
-        }
-      });
-    }
+  .welcome-text h2 {
+    font-size: 22px;
   }
 
-  // ============================================
-  // إدارة التنقل (Navbar)
-  // ============================================
-  function initNavigation() {
-    // زر القائمة في الشاشات الصغيرة
-    const navToggle = document.getElementById('navToggle');
-    const navMenu = document.querySelector('.nav-menu');
-    
-    if (navToggle && navMenu) {
-      navToggle.addEventListener('click', function() {
-        navMenu.classList.toggle('open');
-      });
-    }
-    
-    // زر تسجيل الخروج
-    const logoutBtns = document.querySelectorAll('#logoutBtn');
-    logoutBtns.forEach(btn => {
-      btn.addEventListener('click', function(e) {
-        e.preventDefault();
-        if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
-          SessionManager.logout();
-        }
-      });
-    });
+  .daily-card {
+    padding: 20px;
   }
 
-  // ============================================
-  // تطبيق Ripple Effect على جميع الأزرار
-  // ============================================
-  function initRippleEffect() {
-    document.addEventListener('click', function(e) {
-      const target = e.target.closest('button, .btn-primary, .btn-outline, .btn-ghost, .btn-success, .btn-danger');
-      if (target && !target.classList.contains('ripple')) {
-        target.classList.add('ripple');
-        setTimeout(() => target.classList.remove('ripple'), 600);
-      }
-    });
+  .stat-card p {
+    font-size: 26px;
   }
 
-  // ============================================
-  // تهيئة التطبيق
-  // ============================================
-  function initApp() {
-    // حماية الصفحات
-    if (!PageGuard.protect()) return;
-    
-    // تهيئة التنقل
-    initNavigation();
-    
-    // تهيئة Ripple
-    initRippleEffect();
-    
-    // تحديد الصفحة الحالية
-    const currentPage = window.location.pathname.split('/').pop() || 'login.html';
-    
-    // تهيئة الصفحة المناسبة
-    switch (currentPage) {
-      case 'login.html':
-        initLoginPage();
-        break;
-      case 'index.html':
-        initIndexPage();
-        break;
-      case 'tracker.html':
-        initTrackerPage();
-        break;
-      case 'settings.html':
-        initSettingsPage();
-        break;
-      default:
-        // إذا كانت الصفحة غير معروفة، انتقل لتسجيل الدخول
-        if (!SessionManager.isLoggedIn()) {
-          window.location.href = 'login.html';
-        }
-    }
-    
-    // إضافة رسالة Developer Mode في console للتذكير
-    console.log('%c🔧 Developer Mode متاح - تذكر إزالة هذا الخيار قبل النشر في الإنتاج!', 'color: #ffd54f; font-size: 14px; font-weight: bold;');
+  .calendar-days button {
+    font-size: 13px;
   }
 
-  // ============================================
-  // تشغيل التطبيق عند تحميل الصفحة
-  // ============================================
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initApp);
-  } else {
-    initApp();
+  .bar-chart {
+    height: 120px;
   }
 
-})();
+  .daily-card .quran-detail {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 10px;
+  }
+
+  .navbar {
+    padding: 12px 18px;
+  }
+
+  .nav-brand {
+    font-size: 18px;
+  }
+
+  .nav-brand i {
+    font-size: 22px;
+  }
+
+  .login-card {
+    padding: 25px 15px;
+  }
+
+  .logo-icon {
+    font-size: 40px;
+    padding: 12px;
+  }
+
+  .site-title {
+    font-size: 20px;
+  }
+
+  .input-group input {
+    padding: 12px 40px 12px 15px;
+    font-size: 14px;
+  }
+
+  .btn-primary, .btn-outline, .btn-ghost {
+    font-size: 14px;
+    padding: 10px;
+  }
+
+  .welcome-text h2 {
+    font-size: 18px;
+  }
+
+  .card-header h3 {
+    font-size: 18px;
+  }
+
+  .stat-card p {
+    font-size: 22px;
+  }
+
+  .calendar-card {
+    padding: 15px;
+  }
+
+  .calendar-days button {
+    font-size: 11px;
+    border-radius: 6px;
+  }
+
+  .setting-group {
+    flex-direction: column;
+  }
+
+  .setting-group input {
+    min-width: auto;
+  }
+
+  .setting-group button {
+    width: 100%;
+  }
+
+  .daily-card .quran-detail .detail-item {
+    font-size: 12px;
+  }
+  
+  .quran-badge {
+    font-size: 12px;
+    padding: 4px 12px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .tracker-grid {
+    grid-template-columns: 1fr 250px;
+  }
+}
