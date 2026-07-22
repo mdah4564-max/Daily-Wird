@@ -38,7 +38,31 @@
       <div class="card-header">
         <i class="fas fa-book-open"></i>
         <h3>الورد اليومي</h3>
+        <span class="quran-badge">
+          <i class="fas fa-quran"></i>
+          من القرآن الكريم
+        </span>
       </div>
+      
+      <div class="quran-detail" id="quranDetail">
+        <div class="detail-item">
+          <i class="fas fa-hashtag"></i>
+          <span>الجزء: <strong id="juzNumber">1</strong></span>
+        </div>
+        <div class="detail-item">
+          <i class="fas fa-book"></i>
+          <span>السورة: <strong id="surahName">الفاتحة</strong></span>
+        </div>
+        <div class="detail-item">
+          <i class="fas fa-arrows-alt-h"></i>
+          <span>الآيات: <strong id="ayahRange">1-7</strong></span>
+        </div>
+        <div class="detail-item">
+          <i class="fas fa-leaf"></i>
+          <span>الحزب: <strong id="hizbNumber">1</strong></span>
+        </div>
+      </div>
+      
       <div class="progress-section">
         <div class="progress-label">
           <span>نسبة الإنجاز</span>
@@ -54,17 +78,17 @@
     </section>
 
     <section class="stats-grid">
-      <div class="stat-card glass">
+      <div class="stat-card glass" id="streakCard">
         <i class="fas fa-fire stat-icon"></i>
         <h4>الأيام المتتالية</h4>
         <p id="streakCount">0</p>
       </div>
-      <div class="stat-card glass">
+      <div class="stat-card glass" id="completedCard">
         <i class="fas fa-calendar-check stat-icon"></i>
         <h4>الأيام المنجزة</h4>
         <p id="completedDays">0</p>
       </div>
-      <div class="stat-card glass">
+      <div class="stat-card glass" id="lastCard">
         <i class="fas fa-trophy stat-icon"></i>
         <h4>آخر إنجاز</h4>
         <p id="lastCompletion">—</p>
