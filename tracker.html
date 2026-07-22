@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>المتابعة - متابع الورد اليومي</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav class="navbar glass">
+    <div class="nav-brand">
+      <i class="fas fa-book-quran"></i>
+      <span>متابع الورد</span>
+    </div>
+    <ul class="nav-menu">
+      <li><a href="index.html"><i class="fas fa-home"></i> الرئيسية</a></li>
+      <li><a href="tracker.html" class="active"><i class="fas fa-chart-line"></i> المتابعة</a></li>
+      <li><a href="settings.html"><i class="fas fa-cog"></i> الإعدادات</a></li>
+      <li><a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> خروج</a></li>
+    </ul>
+    <div class="nav-toggle" id="navToggle">
+      <i class="fas fa-bars"></i>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <h2 class="page-title"><i class="fas fa-calendar-alt"></i> تقويم الإنجاز</h2>
+    <div class="tracker-grid">
+      <section class="calendar-card glass">
+        <div class="calendar-header">
+          <button id="prevMonth"><i class="fas fa-chevron-right"></i></button>
+          <h3 id="monthYear"></h3>
+          <button id="nextMonth"><i class="fas fa-chevron-left"></i></button>
+        </div>
+        <div class="calendar-weekdays">
+          <span>ح</span><span>ن</span><span>ث</span><span>ر</span><span>خ</span><span>ج</span><span>س</span>
+        </div>
+        <div class="calendar-days" id="calendarDays"></div>
+      </section>
+
+      <section class="stats-tracker glass">
+        <div class="stat-item">
+          <i class="fas fa-percent"></i>
+          <span>نسبة الإنجاز</span>
+          <strong id="trackerPercent">0%</strong>
+        </div>
+        <div class="stat-item">
+          <i class="fas fa-fire"></i>
+          <span>أعلى سلسلة</span>
+          <strong id="maxStreak">0</strong>
+        </div>
+        <div class="stat-item">
+          <i class="fas fa-calendar-week"></i>
+          <span>هذا الأسبوع</span>
+          <strong id="weeklyCount">0</strong>
+        </div>
+        <div class="stat-item">
+          <i class="fas fa-calendar-alt"></i>
+          <span>هذا الشهر</span>
+          <strong id="monthlyCount">0</strong>
+        </div>
+      </section>
+    </div>
+
+    <div class="chart-css glass">
+      <h3><i class="fas fa-chart-bar"></i> إحصائيات الأيام</h3>
+      <div class="bar-chart" id="barChart"></div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>© 2026 متابع الورد اليومي - جميع الحقوق محفوظة</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
