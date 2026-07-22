@@ -32,6 +32,7 @@ body {
   color: var(--gray-900);
   direction: rtl;
   padding: 20px;
+  transition: background 0.5s ease;
 }
 
 /* Glassmorphism */
@@ -406,6 +407,7 @@ body {
   align-items: center;
   gap: 12px;
   margin-bottom: 20px;
+  flex-wrap: wrap;
 }
 
 .card-header i {
@@ -418,6 +420,68 @@ body {
   font-size: 22px;
 }
 
+/* Quran Badge */
+.quran-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, rgba(255, 213, 79, 0.25), rgba(255, 213, 79, 0.1));
+  border: 1px solid rgba(255, 213, 79, 0.3);
+  border-radius: 30px;
+  padding: 6px 16px;
+  font-size: 14px;
+  color: var(--gold);
+  font-weight: 700;
+  animation: pulseGold 2s ease-in-out infinite;
+}
+
+.quran-badge i {
+  font-size: 18px;
+  color: var(--gold);
+}
+
+@keyframes pulseGold {
+  0%, 100% { 
+    box-shadow: 0 0 10px rgba(255, 213, 79, 0.1);
+  }
+  50% { 
+    box-shadow: 0 0 25px rgba(255, 213, 79, 0.3);
+  }
+}
+
+/* Quran Detail */
+.daily-card .quran-detail {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-top: 15px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  border-right: 4px solid var(--gold);
+}
+
+.daily-card .quran-detail .detail-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 14px;
+}
+
+.daily-card .quran-detail .detail-item i {
+  color: var(--gold);
+  font-size: 16px;
+}
+
+.daily-card .quran-detail .detail-item strong {
+  color: var(--white);
+  font-weight: 700;
+}
+
+/* Progress Section */
 .progress-section {
   margin-bottom: 20px;
 }
@@ -902,29 +966,273 @@ body {
   line-height: 1.8;
 }
 
-/* Dark Mode */
+/* ============================================
+   الوضع الليلي (Dark Mode) - شامل لكل الصفحات
+   ============================================ */
+
 body.dark-mode {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 30%, #0f3460 60%, #1a1a2e 100%);
+  background: linear-gradient(135deg, #0a0a1a 0%, #0f1a2e 25%, #1a1a2e 50%, #0d0d1f 100%);
+  min-height: 100vh;
 }
 
 body.dark-mode .glass,
 body.dark-mode .glass-card,
-body.dark-mode .welcome-section {
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(16px);
+body.dark-mode .login-card,
+body.dark-mode .welcome-section,
+body.dark-mode .daily-card,
+body.dark-mode .stat-card,
+body.dark-mode .recent-card,
+body.dark-mode .calendar-card,
+body.dark-mode .stats-tracker,
+body.dark-mode .chart-css,
+body.dark-mode .setting-card,
+body.dark-mode .navbar {
+  background: rgba(10, 10, 30, 0.7) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
 }
 
 body.dark-mode .navbar {
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(10, 10, 30, 0.85) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-body.dark-mode .stat-card,
-body.dark-mode .setting-card,
-body.dark-mode .calendar-card,
-body.dark-mode .stats-tracker,
-body.dark-mode .recent-card,
-body.dark-mode .chart-css {
-  background: rgba(0, 0, 0, 0.3);
+body.dark-mode .nav-menu li a {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+body.dark-mode .nav-menu li a:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--white);
+}
+
+body.dark-mode .nav-menu li a.active {
+  background: rgba(255, 213, 79, 0.15);
+  color: var(--gold);
+}
+
+body.dark-mode .welcome-text h2 {
+  color: var(--white);
+}
+
+body.dark-mode .date-text,
+body.dark-mode .time-text {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+body.dark-mode .card-header h3 {
+  color: var(--white);
+}
+
+body.dark-mode .progress-label {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+body.dark-mode .stat-card h4 {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+body.dark-mode .stat-card p {
+  color: var(--white);
+}
+
+body.dark-mode .recent-card h3 {
+  color: var(--white);
+}
+
+body.dark-mode .recent-list li {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.8);
+  border-right-color: var(--gold);
+}
+
+body.dark-mode .recent-list li:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .footer {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+body.dark-mode .page-title {
+  color: var(--white);
+}
+
+body.dark-mode .calendar-header h3 {
+  color: var(--white);
+}
+
+body.dark-mode .calendar-header button {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--white);
+}
+
+body.dark-mode .calendar-header button:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+body.dark-mode .calendar-weekdays span {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+body.dark-mode .calendar-days button {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+body.dark-mode .calendar-days button:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+body.dark-mode .calendar-days button.completed {
+  background: linear-gradient(135deg, #1b5e20, #2e7d32) !important;
+  color: var(--white) !important;
+  box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+}
+
+body.dark-mode .calendar-days button.today {
+  border-color: var(--gold);
+}
+
+body.dark-mode .stat-item {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .stat-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .stat-item span {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+body.dark-mode .stat-item strong {
+  color: var(--white);
+}
+
+body.dark-mode .chart-css h3 {
+  color: var(--white);
+}
+
+body.dark-mode .setting-card h3 {
+  color: var(--white);
+}
+
+body.dark-mode .setting-card p {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+body.dark-mode .setting-group input {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--white);
+}
+
+body.dark-mode .setting-group input:focus {
+  border-color: var(--gold);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .setting-group input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+body.dark-mode .color-btn {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .color-btn.active {
+  border-color: var(--gold);
+  box-shadow: 0 0 20px rgba(255, 213, 79, 0.2);
+}
+
+body.dark-mode .toggle-slider {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+body.dark-mode .daily-card .quran-detail {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .daily-card .quran-detail .detail-item {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+body.dark-mode .daily-card .quran-detail .detail-item strong {
+  color: var(--white);
+}
+
+body.dark-mode .quran-badge {
+  background: rgba(255, 213, 79, 0.15);
+  border-color: rgba(255, 213, 79, 0.2);
+}
+
+body.dark-mode .input-group input {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: var(--white);
+}
+
+body.dark-mode .input-group input:focus {
+  border-color: var(--gold);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body.dark-mode .input-group input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+body.dark-mode .form-options {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+body.dark-mode .logo-area .site-title {
+  color: var(--white);
+}
+
+body.dark-mode .logo-area .subtitle {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+body.dark-mode .btn-outline {
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+body.dark-mode .btn-outline:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--gold);
+}
+
+body.dark-mode .btn-ghost {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+body.dark-mode .btn-ghost:hover {
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .dev-link {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+body.dark-mode .dev-link:hover {
+  color: var(--gold-light);
+}
+
+body.dark-mode .setting-card.danger .btn-danger {
+  background: linear-gradient(135deg, #8e0000, #c62828);
+}
+
+body.dark-mode .setting-card.danger .btn-danger:hover {
+  box-shadow: 0 8px 30px rgba(198, 40, 40, 0.3);
+}
+
+body.dark-mode .bar-chart .bar {
+  background: linear-gradient(180deg, var(--gold), #ff8f00);
 }
 
 /* Ripple Effect */
@@ -946,6 +1254,26 @@ body.dark-mode .chart-css {
 
 @keyframes rippleAnim {
   to { transform: scale(4); opacity: 0; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 213, 79, 0.3);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 213, 79, 0.5);
 }
 
 /* Responsive */
@@ -1013,6 +1341,11 @@ body.dark-mode .chart-css {
 
   .bar-chart {
     height: 120px;
+  }
+
+  .daily-card .quran-detail {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 
@@ -1087,6 +1420,15 @@ body.dark-mode .chart-css {
 
   .setting-group button {
     width: 100%;
+  }
+
+  .daily-card .quran-detail .detail-item {
+    font-size: 12px;
+  }
+  
+  .quran-badge {
+    font-size: 12px;
+    padding: 4px 12px;
   }
 }
 
